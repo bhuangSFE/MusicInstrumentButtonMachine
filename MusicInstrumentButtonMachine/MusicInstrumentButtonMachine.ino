@@ -16,7 +16,7 @@
 
 #include <SoftwareSerial.h>
 
-SoftwareSerial mySerial(2, 3); //RX, TX -- for the MIDI / Music Instrument Shield
+SoftwareSerial musicShield(2, 3); //RX, TX -- for the MIDI / Music Instrument Shield
 SoftwareSerial serialLCD(2, 10); //RX, TX -- for an external Serial LCD (LCD-09395)
 
 byte note = 0; //MIDI note value to be played
@@ -32,7 +32,7 @@ void setup() {
   Serial.begin(57600);
 
   //Setup soft serial for MIDI control
-  mySerial.begin(31250);
+  musicShield.begin(31250);
   serialLCD.begin(9600);
 
   //Reset the VS1053
@@ -111,13 +111,13 @@ void noteOff(byte channel, byte note, byte release_velocity) {
 //Plays a MIDI note. Doesn't check to see that cmd is greater than 127, or that data values are less than 127
 void talkMIDI(byte cmd, byte data1, byte data2) {
   digitalWrite(ledPin, HIGH);
-  mySerial.write(cmd);
-  mySerial.write(data1);
+  musicShield.write(cmd);
+  musicShield.write(data1);
 
   //Some commands only have one data byte. All cmds less than 0xBn have 2 data bytes
   //(sort of: http://253.ccarh.org/handout/midiprotocol/)
   if ( (cmd & 0xF0) <= 0xB0)
-    mySerial.write(data2);
+    musicShield.write(data2);
 
   digitalWrite(ledPin, LOW);
 }
