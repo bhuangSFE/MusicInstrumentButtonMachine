@@ -22,7 +22,7 @@ SoftwareSerial serialLCD(2, 10); //RX, TX -- for an external Serial LCD (LCD-093
 byte note = 0; //MIDI note value to be played
 byte resetMIDI = 4; //tied to VS1053 Reset line
 byte ledPin = 13; //MIDI traffic inidicator
-int  instrument = 0;
+int  instrument = 0;   //variable used to set the "instrument" setting (command 0xC0)
 
 int buttons[] = {5, 6, 7, 8};    //four push buttons connected to pins 5,6,7,8
 int notes[] = {27, 28, 29, 30};  //initialize notes to start here.
@@ -50,15 +50,18 @@ void setup() {
   //clear serialLCD display
   serialLCD.write(0xFE);
   serialLCD.write(0x01);
-}
-
-void loop() {
-
-   talkMIDI(0xB0, 0, 0x78); //Bank select drums & special sounds
+  
+  //setup sound bank on the Music Instrument Shield to drums and special sounds
+  talkMIDI(0xB0, 0, 0x78); 
 
    //For this bank 0x78, the instrument does not matter, only the note
   talkMIDI(0xC0, instrument, 0); //Set instrument number. 0xC0 is a 1 data byte command
 
+
+}
+
+void loop() {
+  // cycle through the buttons
   for (int i = 0; i < 4; i++)
   {
     //display to LCD the notes currently mapped to buttons
@@ -74,8 +77,9 @@ void loop() {
       noteOff(0, notes[i], 60);
     }
   }
-  //
-   if (digitalRead(instrumentSelect) == LOW)
+   
+  //if 5th button is pressed, increment the notes
+  if (digitalRead(instrumentSelect) == LOW)
   {
     Serial.println("New Notes!");
     for (int i = 0; i < 4; i++)
@@ -91,9 +95,11 @@ void loop() {
         notes[i] = 27 + i;
       }
     }
+     
+    //holding trap to wait for the button to be released
     while (digitalRead(instrumentSelect) == LOW)
     {}
-    delay(50);
+    delay(20);   //short debounce delay
   }
 }
 
