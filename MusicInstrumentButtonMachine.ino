@@ -1,32 +1,31 @@
-/*
-   MusicInstrumentButtonMachine
+/* MusicInstrumentButtonMachine
 
    based on code from: 2-12-2011
    Spark Fun Electronics 2011
    Nathan Seidle
    Updated to Arduino 1.01 by Marc "Trench" Tschudin
 
-  To play "Sticks" (31):
-  talkMIDI(0xB0, 0, 0x78); //Bank select: drums
-  talkMIDI(0xC0, 5, 0); //Set instrument number
-  //Play note on channel 1 (0x90), some note value (note), middle velocity (60):
-  noteOn(0, 31, 60);
-
+  Hardware:
+  ---------
+  Connect 5 buttons to pins 5, 6, 7, 8, & 9
+  The first four buttons work as "drum beats" and the last button increments the
+  instrument selection.
+  
+  (Optional - connect the data line on a Serial LCD to pin 10)
 */
 
 #include <SoftwareSerial.h>
 
-SoftwareSerial mySerial(2, 3); // RX, TX
-SoftwareSerial serialLCD(2, 10); // RX, TX
+SoftwareSerial mySerial(2, 3); //RX, TX -- for the MIDI / Music Instrument Shield
+SoftwareSerial serialLCD(2, 10); //RX, TX -- for an external Serial LCD (LCD-09395)
 
-byte note = 0; //The MIDI note value to be played
-byte resetMIDI = 4; //Tied to VS1053 Reset line
+byte note = 0; //MIDI note value to be played
+byte resetMIDI = 4; //tied to VS1053 Reset line
 byte ledPin = 13; //MIDI traffic inidicator
 int  instrument = 0;
 
-int buttons[] = {5, 6, 7, 8};
-//int notes[] = {30, 31, 32, 33};
-int notes[] = {27, 28, 29, 30};
+int buttons[] = {5, 6, 7, 8};    //four push buttons connected to pins 5,6,7,8
+int notes[] = {27, 28, 29, 30};  //initialize notes to start here.
 int instrumentSelect = 9;
 
 void setup() {
@@ -43,26 +42,31 @@ void setup() {
   digitalWrite(resetMIDI, HIGH);
   delay(100);
   talkMIDI(0xB0, 0x07, 120); //0xB0 is channel message, set channel volume to near max (127)
+
+  //setup buttons to be INPUT_PULLUP 
   for (int i = 5; i <= 9; i++)
     pinMode(i, INPUT_PULLUP);
+  
+  //clear serialLCD display
   serialLCD.write(0xFE);
   serialLCD.write(0x01);
 }
 
 void loop() {
-  // Serial.println("Demo Fancy Sounds");
-  talkMIDI(0xB0, 0, 0x78); //Bank select drums
 
-  //For this bank 0x78, the instrument does not matter, only the note
+   talkMIDI(0xB0, 0, 0x78); //Bank select drums & special sounds
 
+   //For this bank 0x78, the instrument does not matter, only the note
   talkMIDI(0xC0, instrument, 0); //Set instrument number. 0xC0 is a 1 data byte command
 
-  //Play fancy sounds from 'High Q' to 'Open Surdo [EXC 6]'
   for (int i = 0; i < 4; i++)
   {
+    //display to LCD the notes currently mapped to buttons
     serialLCD.write(0xFE);
     serialLCD.write(0x80 + 4 * i);
     serialLCD.print(notes[i]);
+
+    //if button is pressed, play that note 
     if (digitalRead(buttons[i]) == LOW)
     {
       noteOn(0, notes[i], 60);
@@ -70,7 +74,8 @@ void loop() {
       noteOff(0, notes[i], 60);
     }
   }
-  if (digitalRead(instrumentSelect) == LOW)
+  //
+   if (digitalRead(instrumentSelect) == LOW)
   {
     Serial.println("New Notes!");
     for (int i = 0; i < 4; i++)
