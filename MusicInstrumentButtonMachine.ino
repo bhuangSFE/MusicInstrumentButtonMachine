@@ -97,40 +97,6 @@ void loop() {
   }
 }
 
-
-/*
-  //Demo Melodic
-  //=================================================================
-  Serial.println("Demo Melodic? Sounds");
-  talkMIDI(0xB0, 0, 0x79); //Bank select Melodic
-  //These don't sound different from the main bank to me
-
-  //Change to different instrument
-  for(instrument = 27 ; instrument < 87 ; instrument++) {
-
-    Serial.print(" Instrument: ");
-    Serial.println(instrument, DEC);
-
-    talkMIDI(0xC0, instrument, 0); //Set instrument number. 0xC0 is a 1 data byte command
-
-    //Play notes from F#-0 (30) to F#-5 (90):
-    for (note = 30 ; note < 40 ; note++) {
-      Serial.print("N:");
-      Serial.println(note, DEC);
-
-      //Note on channel 1 (0x90), some note value (note), middle velocity (0x45):
-      noteOn(0, note, 60);
-      delay(50);
-
-      //Turn off the note with a given off/release velocity
-      noteOff(0, note, 60);
-      delay(50);
-    }
-
-    delay(100); //Delay between instruments
-  }
-*/
-
 //Send a MIDI note-on message.  Like pressing a piano key
 //channel ranges from 0-15
 void noteOn(byte channel, byte note, byte attack_velocity) {
